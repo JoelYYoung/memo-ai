@@ -1,4 +1,5 @@
-import { Notice } from 'obsidian';
+import { Notice, requestUrl } from 'obsidian';
+import type { RequestUrlParam, RequestUrlResponse } from 'obsidian';
 import { SM2Algorithm, SM2Params } from './SM2Algorithm';
 import { LLMService } from './LLMService';
 import type MemoAIPlugin from '../main';
@@ -110,7 +111,8 @@ export class ChunkManager {
 				apiKey: settings.llmApiKey || '',
 				apiBase: settings.llmApiBase || 'https://api.openai.com/v1',
 				model: settings.llmModel || 'gpt-3.5-turbo',
-				timeout: (settings.llmTimeout || 60) * 1000 // Convert seconds to milliseconds
+				timeout: (settings.llmTimeout || 60) * 1000, // Convert seconds to milliseconds
+				requestUrl: (param: RequestUrlParam): Promise<RequestUrlResponse> => requestUrl(param)
 			});
 			
 			// Get existing chunks for this note if incremental

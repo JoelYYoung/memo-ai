@@ -1,8 +1,11 @@
+import type { RequestUrlParam, RequestUrlResponse } from 'obsidian';
+
 export interface LLMConfig {
 	apiKey: string;
 	apiBase?: string;
 	model?: string;
 	timeout?: number; // Timeout in milliseconds
+	requestUrl: (param: RequestUrlParam) => Promise<RequestUrlResponse>;
 }
 
 export interface LLMChunk {
@@ -89,13 +92,11 @@ export class LLMService {
 		// Build the full URL
 		const apiUrl = `${apiBase}/chat/completions`;
 
-		// Create abort controller for timeout
-		const controller = new AbortController();
 		const timeoutMs = this.config.timeout || 60000; // Default 60 seconds
-		const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
 
 		try {
-			const response = await fetch(apiUrl, {
+			const response = await this.config.requestUrl({
+				url: apiUrl,
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json',
@@ -112,24 +113,25 @@ export class LLMService {
 					temperature: 0.3,
 					response_format: { type: 'json_object' }
 				}),
-				signal: controller.signal
+				throw: false
 			});
 
-			clearTimeout(timeoutId);
-
-			if (!response.ok) {
-				const errorText = await response.text();
-				let errorMessage = `HTTP ${response.status}: ${response.statusText}`;
+			if (response.status < 200 || response.status >= 300) {
+				let errorMessage = `HTTP ${response.status}`;
 				try {
-					const error = JSON.parse(errorText);
-					errorMessage = error.error?.message || error.message || errorMessage;
+					const error = typeof response.json === 'object' && response.json !== null
+						? response.json as { error?: { message?: string }; message?: string }
+						: null;
+					errorMessage = error?.error?.message || error?.message || response.text || errorMessage;
 				} catch {
-					errorMessage = errorText || errorMessage;
+					errorMessage = response.text || errorMessage;
 				}
 				throw new Error(`LLM API error: ${errorMessage}`);
 			}
 
-			const data = await response.json();
+			const data = typeof response.json === 'object' && response.json !== null
+				? response.json as { choices?: Array<{ message?: { content?: string } }> }
+				: null;
 			if (!data.choices || !data.choices[0] || !data.choices[0].message) {
 				throw new Error('Invalid response format from LLM API');
 			}
@@ -156,17 +158,19 @@ export class LLMService {
 
 			return chunks;
 		} catch (error: unknown) {
-			clearTimeout(timeoutId);
 			console.error('LLM extraction error:', error);
 			console.error('API URL:', apiUrl);
 			console.error('Model:', model);
 			
-			if (error.name === 'AbortError' || error.name === 'TimeoutError') {
-				throw new Error('Request timeout. Please check your network connection or try again.');
-			} else if (error.message.includes('Failed to fetch') || error.message.includes('ERR_CONNECTION')) {
-				throw new Error(`Network error: Cannot connect to ${apiBase}. Please check your network connection and API endpoint.`);
+			if (error instanceof Error) {
+				if (error.name === 'AbortError' || error.name === 'TimeoutError') {
+					throw new Error('Request timeout. Please check your network connection or try again.');
+				} else if (error.message.includes('Failed to fetch') || error.message.includes('ERR_CONNECTION')) {
+					throw new Error(`Network error: Cannot connect to ${apiBase}. Please check your network connection and API endpoint.`);
+				}
+				throw new Error(`Failed to extract chunks: ${error.message}`);
 			}
-			throw new Error(`Failed to extract chunks: ${error.message}`);
+			throw new Error(`Failed to extract chunks: ${String(error)}`);
 		}
 	}
 
@@ -189,13 +193,11 @@ export class LLMService {
 		// Build the full URL
 		const apiUrl = `${apiBase}/chat/completions`;
 
-		// Create abort controller for timeout
-		const controller = new AbortController();
 		const timeoutMs = this.config.timeout || 60000; // Default 60 seconds
-		const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
 
 		try {
-			const response = await fetch(apiUrl, {
+			const response = await this.config.requestUrl({
+				url: apiUrl,
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json',
@@ -212,24 +214,25 @@ export class LLMService {
 					temperature: 0.3,
 					response_format: { type: 'json_object' }
 				}),
-				signal: controller.signal
+				throw: false
 			});
 
-			clearTimeout(timeoutId);
-
-			if (!response.ok) {
-				const errorText = await response.text();
-				let errorMessage = `HTTP ${response.status}: ${response.statusText}`;
+			if (response.status < 200 || response.status >= 300) {
+				let errorMessage = `HTTP ${response.status}`;
 				try {
-					const error = JSON.parse(errorText);
-					errorMessage = error.error?.message || error.message || errorMessage;
+					const error = typeof response.json === 'object' && response.json !== null
+						? response.json as { error?: { message?: string }; message?: string }
+						: null;
+					errorMessage = error?.error?.message || error?.message || response.text || errorMessage;
 				} catch {
-					errorMessage = errorText || errorMessage;
+					errorMessage = response.text || errorMessage;
 				}
 				throw new Error(`LLM API error: ${errorMessage}`);
 			}
 
-			const data = await response.json();
+			const data = typeof response.json === 'object' && response.json !== null
+				? response.json as { choices?: Array<{ message?: { content?: string } }> }
+				: null;
 			if (!data.choices || !data.choices[0] || !data.choices[0].message) {
 				throw new Error('Invalid response format from LLM API');
 			}
@@ -261,17 +264,19 @@ export class LLMService {
 				new_chunks: newChunks
 			};
 		} catch (error: unknown) {
-			clearTimeout(timeoutId);
 			console.error('LLM incremental extraction error:', error);
 			console.error('API URL:', apiUrl);
 			console.error('Model:', model);
 			
-			if (error.name === 'AbortError' || error.name === 'TimeoutError') {
-				throw new Error('Request timeout. Please check your network connection or try again.');
-			} else if (error.message.includes('Failed to fetch') || error.message.includes('ERR_CONNECTION')) {
-				throw new Error(`Network error: Cannot connect to ${apiBase}. Please check your network connection and API endpoint.`);
+			if (error instanceof Error) {
+				if (error.name === 'AbortError' || error.name === 'TimeoutError') {
+					throw new Error('Request timeout. Please check your network connection or try again.');
+				} else if (error.message.includes('Failed to fetch') || error.message.includes('ERR_CONNECTION')) {
+					throw new Error(`Network error: Cannot connect to ${apiBase}. Please check your network connection and API endpoint.`);
+				}
+				throw new Error(`Failed to extract chunks incrementally: ${error.message}`);
 			}
-			throw new Error(`Failed to extract chunks incrementally: ${error.message}`);
+			throw new Error(`Failed to extract chunks incrementally: ${String(error)}`);
 		}
 	}
 
@@ -293,8 +298,12 @@ export class LLMService {
 
 		// Parse and validate grade
 		let grade = 3; // Default
-		if (result.evaluation && result.evaluation.grade !== undefined && result.evaluation.grade !== null) {
-			const parsedGrade = Number(result.evaluation.grade);
+		const evaluation = result.evaluation && typeof result.evaluation === 'object' && result.evaluation !== null
+			? result.evaluation as { grade?: unknown; recommendation?: unknown; confidence?: unknown }
+			: null;
+		
+		if (evaluation && evaluation.grade !== undefined && evaluation.grade !== null) {
+			const parsedGrade = Number(evaluation.grade);
 			if (!isNaN(parsedGrade)) {
 				grade = Math.max(0, Math.min(5, Math.round(parsedGrade)));
 			}
@@ -303,10 +312,10 @@ export class LLMService {
 		return {
 			response: String(result.response).trim(),
 			shouldEnd: Boolean(result.should_end),
-			evaluation: result.evaluation ? {
+			evaluation: evaluation ? {
 				grade: grade,
-				recommendation: String(result.evaluation.recommendation || ''),
-				confidence: result.evaluation.confidence !== undefined ? Number(result.evaluation.confidence) : undefined
+				recommendation: String(evaluation.recommendation || ''),
+				confidence: evaluation.confidence !== undefined ? Number(evaluation.confidence) : undefined
 			} : undefined
 		};
 	}
@@ -473,12 +482,11 @@ If you decide the session is over (or the learner requests an immediate evaluati
 		apiBase = apiBase.trim().replace(/\/+$/, '').replace(/\/chat\/completions\/?$/, '');
 		const apiUrl = `${apiBase}/chat/completions`;
 
-		const controller = new AbortController();
 		const timeoutMs = this.config.timeout || 60000; // Default 60 seconds
-		const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
 
 		try {
-			const response = await fetch(apiUrl, {
+			const response = await this.config.requestUrl({
+				url: apiUrl,
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json',
@@ -490,24 +498,22 @@ If you decide the session is over (or the learner requests an immediate evaluati
 					temperature: 0.4,
 					response_format: { type: 'json_object' }
 				}),
-				signal: controller.signal
+				throw: false
 			});
 
-			clearTimeout(timeoutId);
-
-			if (!response.ok) {
-				const errorText = await response.text();
-				throw new Error(errorText || response.statusText);
+			if (response.status < 200 || response.status >= 300) {
+				throw new Error(response.text || `HTTP ${response.status}`);
 			}
 
-			const data = await response.json();
-			const content = data.choices?.[0]?.message?.content;
+			const data = typeof response.json === 'object' && response.json !== null
+				? response.json as { choices?: Array<{ message?: { content?: string } }> }
+				: null;
+			const content = data?.choices?.[0]?.message?.content;
 			if (!content) {
 				throw new Error('Empty response from LLM API');
 			}
 			return JSON.parse(content) as JsonPromptResult;
 		} catch (error: unknown) {
-			clearTimeout(timeoutId);
 			throw error;
 		}
 	}

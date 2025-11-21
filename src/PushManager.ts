@@ -1,4 +1,5 @@
-import { Events, Notice } from 'obsidian';
+import { Events, Notice, requestUrl } from 'obsidian';
+import type { RequestUrlParam, RequestUrlResponse } from 'obsidian';
 import type MemoAIPlugin from '../main';
 import { Chunk, ChunkManager } from './ChunkManager';
 import { LLMService, PushResponseResult, PushConversationHistory } from './LLMService';
@@ -317,7 +318,8 @@ export class PushManager extends Events {
 			apiKey: settings.llmApiKey,
 			apiBase: settings.llmApiBase,
 			model: settings.llmModel,
-			timeout: (settings.llmTimeout || 60) * 1000 // Convert seconds to milliseconds
+			timeout: (settings.llmTimeout || 60) * 1000, // Convert seconds to milliseconds
+			requestUrl: (param: RequestUrlParam): Promise<RequestUrlResponse> => requestUrl(param)
 		};
 	}
 
