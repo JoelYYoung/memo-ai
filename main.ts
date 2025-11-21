@@ -186,7 +186,7 @@ class MemoAISettingTab extends PluginSettingTab {
 		containerEl.empty();
 
 		new Setting(containerEl)
-			.setName('LLM Configuration')
+			.setName('LLM configuration')
 			.setHeading();
 		
 		new Setting(containerEl)
@@ -194,7 +194,7 @@ class MemoAISettingTab extends PluginSettingTab {
 			.setDesc('Chunks are extracted using LLM (AI). Configure your LLM API settings below.');
 
 		new Setting(containerEl)
-			.setName('LLM API Key')
+			.setName('LLM API key')
 			.setDesc('Your OpenAI API key (or compatible API key)')
 			.addText(text => {
 				text.setPlaceholder('sk-...')
@@ -207,7 +207,7 @@ class MemoAISettingTab extends PluginSettingTab {
 			});
 
 		new Setting(containerEl)
-			.setName('LLM API Base URL')
+			.setName('LLM API base URL')
 			.setDesc('API base URL (default: OpenAI)')
 			.addText(text => text
 				.setPlaceholder('https://api.openai.com/v1')
@@ -218,7 +218,7 @@ class MemoAISettingTab extends PluginSettingTab {
 				}));
 
 		new Setting(containerEl)
-			.setName('LLM Model')
+			.setName('LLM model')
 			.setDesc('Model name to use (e.g., gpt-3.5-turbo, gpt-4)')
 			.addText(text => text
 				.setPlaceholder('gpt-3.5-turbo')
@@ -240,12 +240,12 @@ class MemoAISettingTab extends PluginSettingTab {
 					}));
 
 		new Setting(containerEl)
-			.setName('Push Configuration')
+			.setName('Push configuration')
 			.setHeading();
 
 		new Setting(containerEl)
 			.setName('Max active pushes')
-			.setDesc('How many pushes is allowed to be active at the same time')
+			.setDesc('How many pushes are allowed to be active at the same time')
 			.addSlider(slider => slider
 				.setLimits(1, 20, 1)
 				.setValue(this.plugin.settings.pushMaxActive || 5)
@@ -269,7 +269,7 @@ class MemoAISettingTab extends PluginSettingTab {
 
 		new Setting(containerEl)
 			.setName('Push score threshold')
-			.setDesc('Minimum score required for a chunk to be recommended, which corresponds to the chunk score required for a chunk to be recommended')
+			.setDesc('Minimum score required for a chunk to be recommended')
 			.addSlider(slider => slider
 				.setLimits(2, 6, 0.5)
 				.setValue(this.plugin.settings.pushScoreThreshold || 2)

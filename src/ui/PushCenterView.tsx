@@ -19,7 +19,7 @@ export class PushCenterView extends ReactView {
 	}
 
 	getDisplayText() {
-		return "Push Center";
+		return "Push center";
 	}
 
 	getIcon() {

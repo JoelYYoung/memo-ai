@@ -20,7 +20,7 @@ export class NoteChunksView extends ReactView {
 	}
 
 	getDisplayText() {
-		return "Note Chunks";
+		return "Note chunks";
 	}
 
 	getIcon() {
