@@ -260,7 +260,6 @@ export class PushManager extends Events {
 		if (!push) throw new Error('Push not found');
 		if (push.state !== 'active') {
 			// If push is already completed, don't evaluate again
-			console.log(`[PushManager] forceAutoEvaluate: Push ${pushId} is already ${push.state}, skipping evaluation`);
 			return;
 		}
 		const chunk = this.chunkManager.getChunk(push.chunkId);
@@ -286,15 +285,7 @@ export class PushManager extends Events {
 			? Math.max(0, Math.min(5, Math.round(evaluation.grade)))
 			: 3; // Default to 3 if grade is missing
 		
-		// Log the grade for debugging
-		console.log(`[PushManager] Applying evaluation: original grade=${evaluation.grade}, normalized grade=${grade}, chunk repetitions before=${chunk.sm2Repetitions}, intervalDays before=${chunk.sm2IntervalDays}`);
-		
 		const updatedChunk = await this.chunkManager.reviewChunk(chunk.id, grade);
-		
-		// Log after review
-		if (updatedChunk) {
-			console.log(`[PushManager] After review: repetitions=${updatedChunk.sm2Repetitions}, intervalDays=${updatedChunk.sm2IntervalDays}, dueAt=${new Date(updatedChunk.dueAt).toISOString()}`);
-		}
 		
 		push.state = 'completed';
 		push.evaluation = {

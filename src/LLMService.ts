@@ -290,9 +290,6 @@ export class LLMService {
 				grade = Math.max(0, Math.min(5, Math.round(parsedGrade)));
 			}
 		}
-		
-		// Log for debugging
-		console.log(`[LLMService] generatePushResponse: original grade=${result.evaluation?.grade}, parsed grade=${grade}`);
 
 		return {
 			response: String(result.response).trim(),

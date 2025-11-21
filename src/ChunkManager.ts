@@ -81,8 +81,6 @@ export class ChunkManager {
 			
 			// Save chunks to persist the deletion
 			await this.saveChunks();
-			
-			console.log(`[ChunkManager] Cleaned up ${chunksToDelete.length} chunks for deleted notes`);
 		}
 	}
 
@@ -309,9 +307,6 @@ export class ChunkManager {
 		const chunk = this.chunks.get(chunkId);
 		if (!chunk) return;
 
-		// Log before review for debugging
-		console.log(`[ChunkManager] reviewChunk: chunkId=${chunkId}, grade=${grade}, current repetitions=${chunk.sm2Repetitions}, current intervalDays=${chunk.sm2IntervalDays}, current ef=${chunk.sm2Ef}`);
-
 		const params: SM2Params = {
 			ef: chunk.sm2Ef,
 			repetitions: chunk.sm2Repetitions,
@@ -320,9 +315,6 @@ export class ChunkManager {
 		};
 
 		const result = SM2Algorithm.update(grade, params);
-		
-		// Log SM2 algorithm result for debugging
-		console.log(`[ChunkManager] SM2 result: newEf=${result.newEf}, newRepetitions=${result.newRepetitions}, newIntervalDays=${result.newIntervalDays}`);
 		
 		chunk.sm2Ef = result.newEf;
 		chunk.sm2Repetitions = result.newRepetitions;

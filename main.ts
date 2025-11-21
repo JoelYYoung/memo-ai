@@ -185,11 +185,13 @@ class MemoAISettingTab extends PluginSettingTab {
 
 		containerEl.empty();
 
-		containerEl.createEl('h3', { text: 'LLM Settings' });
-		containerEl.createEl('p', { 
-			text: 'Chunks are extracted using LLM (AI). Configure your LLM API settings below.',
-			cls: 'setting-item-description'
-		});
+		new Setting(containerEl)
+			.setName('LLM Settings')
+			.setHeading();
+		
+		new Setting(containerEl)
+			.setName('')
+			.setDesc('Chunks are extracted using LLM (AI). Configure your LLM API settings below.');
 
 		new Setting(containerEl)
 			.setName('LLM API Key')
@@ -237,7 +239,9 @@ class MemoAISettingTab extends PluginSettingTab {
 						await this.plugin.saveSettings();
 					}));
 
-		containerEl.createEl('h3', { text: 'Push Settings' });
+		new Setting(containerEl)
+			.setName('Push Settings')
+			.setHeading();
 
 		new Setting(containerEl)
 			.setName('Max active pushes')

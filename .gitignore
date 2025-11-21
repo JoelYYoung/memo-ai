@@ -1,6 +1,36 @@
+# Dependencies
 node_modules/
-*.log
-data.json
-.*
-!.gitignore
 
+# Build output
+main.js
+main.js.map
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+__MACOSX/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Plugin data
+data.json
+
+# Temporary files
+*.tmp
+*.temp
