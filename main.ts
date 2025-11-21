@@ -186,7 +186,7 @@ class MemoAISettingTab extends PluginSettingTab {
 		containerEl.empty();
 
 		new Setting(containerEl)
-			.setName('LLM Settings')
+			.setName('LLM Configuration')
 			.setHeading();
 		
 		new Setting(containerEl)
@@ -240,7 +240,7 @@ class MemoAISettingTab extends PluginSettingTab {
 					}));
 
 		new Setting(containerEl)
-			.setName('Push Settings')
+			.setName('Push Configuration')
 			.setHeading();
 
 		new Setting(containerEl)
