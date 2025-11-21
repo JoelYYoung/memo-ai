@@ -108,18 +108,6 @@ export const PushCenterViewComponent: React.FC<PushCenterViewProps> = ({ plugin 
 		}
 	};
 
-	const handleManualEvaluate = async (pushId: string) => {
-		const grade = manualGrades[pushId] ?? 3;
-		try {
-			await plugin.pushManager.manualEvaluate(pushId, grade);
-			new Notice('Evaluation saved');
-			loadPushes();
-		} catch (e: unknown) {
-			const errorMessage = e instanceof Error ? e.message : String(e);
-			new Notice(`Failed to evaluate: ${errorMessage}`);
-		}
-	};
-
 	const handleManualGradeChange = (pushId: string, grade: number) => {
 		setManualGrades(prev => ({ ...prev, [pushId]: grade }));
 	};
@@ -213,7 +201,7 @@ export const PushCenterViewComponent: React.FC<PushCenterViewProps> = ({ plugin 
 		<div className="ai-notebook-push-center">
 			<div className="ai-notebook-push-header">
 				<h2>Pushes ({pushes.length})</h2>
-				<button onClick={handleRefresh} disabled={isRefreshing}>
+				<button onClick={() => void handleRefresh()} disabled={isRefreshing}>
 					{isRefreshing ? 'Refreshing...' : 'Refresh Pushes'}
 				</button>
 			</div>
@@ -276,14 +264,14 @@ export const PushCenterViewComponent: React.FC<PushCenterViewProps> = ({ plugin 
 										{selectedChunk.notePath && (
 											<button 
 												className="ai-notebook-push-info-btn"
-												onClick={() => plugin.openFileAtPath(selectedChunk.notePath)}
+												onClick={() => void plugin.openFileAtPath(selectedChunk.notePath)}
 											>
 												Open Note
 											</button>
 										)}
 										<button 
 											className="ai-notebook-push-info-btn mod-warning"
-											onClick={() => handleDeletePush(selectedPush.id)}
+											onClick={() => void handleDeletePush(selectedPush.id)}
 										>
 											Delete Push
 										</button>
@@ -295,8 +283,8 @@ export const PushCenterViewComponent: React.FC<PushCenterViewProps> = ({ plugin 
 							<ChunkCard
 								chunk={selectedChunk}
 								showIndex={false}
-								onToggleReview={handleToggleReview}
-								onChangeImportance={handleChangeImportance}
+								onToggleReview={(chunk) => { void handleToggleReview(chunk); }}
+								onChangeImportance={(chunk, newLevel) => { void handleChangeImportance(chunk, newLevel); }}
 								getFamiliarityColor={getFamiliarityColor}
 								formatDate={formatExactDate}
 							/>
@@ -330,7 +318,7 @@ export const PushCenterViewComponent: React.FC<PushCenterViewProps> = ({ plugin 
 													/>
 													<button 
 														className="ai-notebook-submit-grade-btn"
-														onClick={() => handleSubmitManualGrade(selectedPush.id)}
+														onClick={() => void handleSubmitManualGrade(selectedPush.id)}
 													>
 														Submit
 													</button>
@@ -342,7 +330,7 @@ export const PushCenterViewComponent: React.FC<PushCenterViewProps> = ({ plugin 
 												<p>Start a interactive review session with AI.</p>
 												<div className="ai-notebook-start-conversation-wrapper">
 													<button 
-														onClick={() => handleStartConversationWithTab(selectedPush.id)}
+														onClick={() => void handleStartConversationWithTab(selectedPush.id)}
 														disabled={isLoading[selectedPush.id]}
 														className={isLoading[selectedPush.id] ? 'loading' : ''}
 													>
@@ -398,7 +386,7 @@ export const PushCenterViewComponent: React.FC<PushCenterViewProps> = ({ plugin 
 											<div className="ai-notebook-push-end-btn-wrapper">
 												<button 
 													className={`ai-notebook-push-end-btn ${isLoadingEnd[selectedPush.id] ? 'loading' : ''} ${isLoading[selectedPush.id] ? 'disabled' : ''}`}
-													onClick={() => handleForceEvaluate(selectedPush.id)}
+													onClick={() => void handleForceEvaluate(selectedPush.id)}
 													disabled={isLoading[selectedPush.id] || isLoadingEnd[selectedPush.id]}
 												>
 													{isLoadingEnd[selectedPush.id] ? 'LLM evaluating...' : 'End Conversation'}

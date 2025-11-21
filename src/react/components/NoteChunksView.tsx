@@ -31,8 +31,6 @@ export const NoteChunksViewComponent: React.FC<NoteChunksViewProps> = ({ plugin,
 		if (plugin.pushManager) {
 			plugin.pushManager.on('push-updated', handler);
 		}
-		// Also listen to chunk updates
-		const chunkUpdateHandler = () => loadChunks();
 		// Trigger reload when chunks are updated
 		return () => {
 			if (plugin.pushManager) {
@@ -103,7 +101,7 @@ export const NoteChunksViewComponent: React.FC<NoteChunksViewProps> = ({ plugin,
 			<div className="ai-notebook-note-chunks-header">
 				<h2>Chunks ({chunks.length})</h2>
 				<button 
-					onClick={handleExtract} 
+					onClick={() => void handleExtract()} 
 					disabled={isExtracting}
 					className={isExtracting ? 'loading' : ''}
 				>
@@ -124,9 +122,9 @@ export const NoteChunksViewComponent: React.FC<NoteChunksViewProps> = ({ plugin,
 							showIndex={true}
 							index={index}
 							total={chunks.length}
-							onDelete={handleDelete}
-							onToggleReview={handleToggleReview}
-							onChangeImportance={handleChangeImportance}
+							onDelete={(chunkId) => { void handleDelete(chunkId); }}
+							onToggleReview={(chunk) => { void handleToggleReview(chunk); }}
+							onChangeImportance={(chunk, newLevel) => { void handleChangeImportance(chunk, newLevel); }}
 							getFamiliarityColor={getFamiliarityColor}
 							formatDate={formatDate}
 						/>

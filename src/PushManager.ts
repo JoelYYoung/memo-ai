@@ -105,7 +105,6 @@ export class PushManager extends Events {
 		const now = Date.now();
 		let changed = false;
 		let deleted = 0;
-		const initialCount = Object.keys(this.pushes).length;
 		
 		// Delete completed or expired pushes
 		for (const [id, push] of Object.entries(this.pushes)) {
