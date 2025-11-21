@@ -48,6 +48,13 @@ export interface PushResponseParams extends PushQuestionParams {
 	forceEvaluate?: boolean;
 }
 
+export interface JsonPromptResult {
+	question?: string;
+	response?: string;
+	grade?: number;
+	[key: string]: unknown; // Allow other properties from LLM response
+}
+
 export interface PushEvaluationResult {
 	grade: number;
 	recommendation: string;
@@ -135,9 +142,10 @@ export class LLMService {
 			let parsed: LLMResponse;
 			try {
 				parsed = JSON.parse(content) as LLMResponse;
-			} catch (parseError: any) {
+			} catch (parseError: unknown) {
+				const errorMessage = parseError instanceof Error ? parseError.message : String(parseError);
 				console.error('Failed to parse LLM response:', content);
-				throw new Error(`Failed to parse LLM response as JSON: ${parseError.message}`);
+				throw new Error(`Failed to parse LLM response as JSON: ${errorMessage}`);
 			}
 
 			const chunks = parsed.chunks || [];
@@ -147,7 +155,7 @@ export class LLMService {
 			}
 
 			return chunks;
-		} catch (error: any) {
+		} catch (error: unknown) {
 			clearTimeout(timeoutId);
 			console.error('LLM extraction error:', error);
 			console.error('API URL:', apiUrl);
@@ -234,9 +242,10 @@ export class LLMService {
 			let parsed: IncrementalLLMResponse;
 			try {
 				parsed = JSON.parse(content) as IncrementalLLMResponse;
-			} catch (parseError: any) {
+			} catch (parseError: unknown) {
+				const errorMessage = parseError instanceof Error ? parseError.message : String(parseError);
 				console.error('Failed to parse LLM response:', content);
-				throw new Error(`Failed to parse LLM response as JSON: ${parseError.message}`);
+				throw new Error(`Failed to parse LLM response as JSON: ${errorMessage}`);
 			}
 
 			const existingChunks = parsed.existing_chunks || [];
@@ -251,7 +260,7 @@ export class LLMService {
 				existing_chunks: existingChunks,
 				new_chunks: newChunks
 			};
-		} catch (error: any) {
+		} catch (error: unknown) {
 			clearTimeout(timeoutId);
 			console.error('LLM incremental extraction error:', error);
 			console.error('API URL:', apiUrl);
@@ -454,7 +463,7 @@ Return JSON exactly in this structure:
 If you decide the session is over (or the learner requests an immediate evaluation), set "should_end" to true and fill the evaluation object. Otherwise, set "should_end" to false and set "evaluation" to null.`;
 	}
 
-	private async callJsonPrompt(prompt: string): Promise<any> {
+	private async callJsonPrompt(prompt: string): Promise<JsonPromptResult> {
 		if (!this.config.apiKey) {
 			throw new Error('LLM API key not configured');
 		}
@@ -496,8 +505,8 @@ If you decide the session is over (or the learner requests an immediate evaluati
 			if (!content) {
 				throw new Error('Empty response from LLM API');
 			}
-			return JSON.parse(content);
-		} catch (error: any) {
+			return JSON.parse(content) as JsonPromptResult;
+		} catch (error: unknown) {
 			clearTimeout(timeoutId);
 			throw error;
 		}

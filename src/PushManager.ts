@@ -18,12 +18,12 @@ export class PushManager extends Events {
 	}
 
 	private getMaxPushCount(): number {
-		const value = Number((this.plugin as any).settings?.pushMaxActive ?? 5);
+		const value = Number(this.plugin.settings?.pushMaxActive ?? 5);
 		return Math.max(1, Math.min(50, value));
 	}
 
 	private getPushDueDuration(): number {
-		const hours = Number((this.plugin as any).settings?.pushDueHours ?? 24);
+		const hours = Number(this.plugin.settings?.pushDueHours ?? 24);
 		const safeHours = isNaN(hours) ? 24 : Math.max(1, Math.min(720, hours));
 		return safeHours * 60 * 60 * 1000;
 	}
@@ -135,7 +135,7 @@ export class PushManager extends Events {
 	}
 
 	async schedulePushes(maxCount: number = this.getMaxPushCount(), debugMode: boolean = false): Promise<number> {
-		const settings = (this.plugin as any).settings;
+		const settings = this.plugin.settings;
 		if (!settings?.llmApiKey) {
 			new Notice('Configure LLM settings before scheduling pushes.');
 			return 0;
@@ -312,7 +312,7 @@ export class PushManager extends Events {
 	}
 
 	private getLLMConfig() {
-		const settings = (this.plugin as any).settings;
+		const settings = this.plugin.settings;
 		return {
 			apiKey: settings.llmApiKey,
 			apiBase: settings.llmApiBase,
@@ -329,7 +329,7 @@ export class PushManager extends Events {
 				familiarScore: chunk.familiarScore || 0,
 				language: 'zh'
 			});
-		} catch (e: any) {
+		} catch (e: unknown) {
 			console.error('Failed to generate push question', e);
 			return `请解释以下内容：${chunk.content.slice(0, 80)}...`;
 		}
@@ -345,7 +345,7 @@ export class PushManager extends Events {
 				language: 'zh',
 				forceEvaluate
 			});
-		} catch (e: any) {
+		} catch (e: unknown) {
 			console.error('Failed to generate push response', e);
 			return {
 				response: '我暂时无法处理这个问题，请稍后再试。',

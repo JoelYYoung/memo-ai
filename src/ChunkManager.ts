@@ -34,20 +34,15 @@ export class ChunkManager {
 	async loadChunks() {
 		const chunksArray = this.plugin.getStoredChunkEntries() ?? [];
 		for (const [id, chunk] of chunksArray) {
-			if (chunk.needsReview === undefined) {
-				chunk.needsReview = true;
-			}
-			if ((chunk as any).chunkType !== 'knowledge') {
-				(chunk as any).chunkType = 'knowledge';
-			}
-			if (!chunk.createdAt) {
-				chunk.createdAt = chunk.lastReviewedAt || chunk.dueAt || Date.now();
-			}
-			// chunkScore is optional, old data may not have it
-			this.chunks.set(id, {
+			// Handle legacy data that may not have certain fields
+			const chunkWithDefaults: Chunk = {
 				...chunk,
-				chunkType: 'knowledge'
-			});
+				chunkType: 'knowledge',
+				needsReview: chunk.needsReview ?? true,
+				createdAt: chunk.createdAt || chunk.lastReviewedAt || chunk.dueAt || Date.now()
+			};
+			// chunkScore is optional, old data may not have it
+			this.chunks.set(id, chunkWithDefaults);
 		}
 	}
 
@@ -96,7 +91,7 @@ export class ChunkManager {
 		}
 
 		const content = await this.app.vault.read(activeFile);
-		const settings = (this.plugin as any).settings;
+		const settings = this.plugin.settings;
 
 		// Check if LLM API key is configured
 		if (!settings?.llmApiKey) {
@@ -234,8 +229,9 @@ export class ChunkManager {
 				await this.saveChunks();
 				new Notice(`Extracted: ${created} new, ${updated} updated, ${deleted} deleted`);
 			}
-		} catch (error: any) {
-			new Notice(`LLM extraction failed: ${error.message}`);
+		} catch (error: unknown) {
+			const errorMessage = error instanceof Error ? error.message : String(error);
+			new Notice(`LLM extraction failed: ${errorMessage}`);
 			console.error('LLM extraction error:', error);
 			return;
 		}

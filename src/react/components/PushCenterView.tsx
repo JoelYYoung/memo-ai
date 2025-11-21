@@ -55,8 +55,9 @@ export const PushCenterViewComponent: React.FC<PushCenterViewProps> = ({ plugin 
 			new Notice(
 				`Pushes refreshed: ${stats.deleted} deleted, ${stats.created} created, ${stats.kept} kept`
 			);
-		} catch (e: any) {
-			new Notice(`Failed to refresh pushes: ${e.message}`);
+		} catch (e: unknown) {
+			const errorMessage = e instanceof Error ? e.message : String(e);
+			new Notice(`Failed to refresh pushes: ${errorMessage}`);
 		} finally {
 			setIsRefreshing(false);
 		}
@@ -67,8 +68,9 @@ export const PushCenterViewComponent: React.FC<PushCenterViewProps> = ({ plugin 
 		try {
 			await plugin.pushManager.startConversation(pushId);
 			loadPushes();
-		} catch (e: any) {
-			new Notice(`Failed to start push: ${e.message}`);
+		} catch (e: unknown) {
+			const errorMessage = e instanceof Error ? e.message : String(e);
+			new Notice(`Failed to start push: ${errorMessage}`);
 		} finally {
 			setIsLoading(prev => ({ ...prev, [pushId]: false }));
 		}
@@ -84,8 +86,9 @@ export const PushCenterViewComponent: React.FC<PushCenterViewProps> = ({ plugin 
 			await plugin.pushManager.sendUserMessage(pushId, content);
 			setMessageInputs(prev => ({ ...prev, [pushId]: '' }));
 			loadPushes();
-		} catch (e: any) {
-			new Notice(`Failed to send message: ${e.message}`);
+		} catch (e: unknown) {
+			const errorMessage = e instanceof Error ? e.message : String(e);
+			new Notice(`Failed to send message: ${errorMessage}`);
 		} finally {
 			setIsLoading(prev => ({ ...prev, [pushId]: false }));
 		}
@@ -97,8 +100,9 @@ export const PushCenterViewComponent: React.FC<PushCenterViewProps> = ({ plugin 
 		try {
 			await plugin.pushManager.forceAutoEvaluate(pushId);
 			loadPushes();
-		} catch (e: any) {
-			new Notice(`Failed to finalize: ${e.message}`);
+		} catch (e: unknown) {
+			const errorMessage = e instanceof Error ? e.message : String(e);
+			new Notice(`Failed to finalize: ${errorMessage}`);
 		} finally {
 			setIsLoadingEnd(prev => ({ ...prev, [pushId]: false }));
 		}
@@ -110,8 +114,9 @@ export const PushCenterViewComponent: React.FC<PushCenterViewProps> = ({ plugin 
 			await plugin.pushManager.manualEvaluate(pushId, grade);
 			new Notice('Evaluation saved');
 			loadPushes();
-		} catch (e: any) {
-			new Notice(`Failed to evaluate: ${e.message}`);
+		} catch (e: unknown) {
+			const errorMessage = e instanceof Error ? e.message : String(e);
+			new Notice(`Failed to evaluate: ${errorMessage}`);
 		}
 	};
 
@@ -128,8 +133,9 @@ export const PushCenterViewComponent: React.FC<PushCenterViewProps> = ({ plugin 
 			setHasInteracted(prev => ({ ...prev, [pushId]: true }));
 			setEvaluationMethod(prev => ({ ...prev, [pushId]: 'manual' }));
 			loadPushes();
-		} catch (e: any) {
-			new Notice(`Failed to evaluate: ${e.message}`);
+		} catch (e: unknown) {
+			const errorMessage = e instanceof Error ? e.message : String(e);
+			new Notice(`Failed to evaluate: ${errorMessage}`);
 		} finally {
 			setIsLoading(prev => ({ ...prev, [pushId]: false }));
 		}
