@@ -482,40 +482,34 @@ If you decide the session is over (or the learner requests an immediate evaluati
 		apiBase = apiBase.trim().replace(/\/+$/, '').replace(/\/chat\/completions\/?$/, '');
 		const apiUrl = `${apiBase}/chat/completions`;
 
-		const timeoutMs = this.config.timeout || 60000; // Default 60 seconds
+		const response = await this.config.requestUrl({
+			url: apiUrl,
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json',
+				'Authorization': `Bearer ${this.config.apiKey}`
+			},
+			body: JSON.stringify({
+				model,
+				messages: [{ role: 'user', content: prompt }],
+				temperature: 0.4,
+				response_format: { type: 'json_object' }
+			}),
+			throw: false
+		});
 
-		try {
-			const response = await this.config.requestUrl({
-				url: apiUrl,
-				method: 'POST',
-				headers: {
-					'Content-Type': 'application/json',
-					'Authorization': `Bearer ${this.config.apiKey}`
-				},
-				body: JSON.stringify({
-					model,
-					messages: [{ role: 'user', content: prompt }],
-					temperature: 0.4,
-					response_format: { type: 'json_object' }
-				}),
-				throw: false
-			});
-
-			if (response.status < 200 || response.status >= 300) {
-				throw new Error(response.text || `HTTP ${response.status}`);
-			}
-
-			const data = typeof response.json === 'object' && response.json !== null
-				? response.json as { choices?: Array<{ message?: { content?: string } }> }
-				: null;
-			const content = data?.choices?.[0]?.message?.content;
-			if (!content) {
-				throw new Error('Empty response from LLM API');
-			}
-			return JSON.parse(content) as JsonPromptResult;
-		} catch (error: unknown) {
-			throw error;
+		if (response.status < 200 || response.status >= 300) {
+			throw new Error(response.text || `HTTP ${response.status}`);
 		}
+
+		const data = typeof response.json === 'object' && response.json !== null
+			? response.json as { choices?: Array<{ message?: { content?: string } }> }
+			: null;
+		const content = data?.choices?.[0]?.message?.content;
+		if (!content) {
+			throw new Error('Empty response from LLM API');
+		}
+		return JSON.parse(content) as JsonPromptResult;
 	}
 }
 
