@@ -29,10 +29,10 @@ export class ChunkManager {
 
 	constructor(plugin: MemoAIPlugin) {
 		this.plugin = plugin;
-		void this.loadChunks();
+		this.loadChunks();
 	}
 
-	async loadChunks() {
+	loadChunks() {
 		const chunksArray = this.plugin.getStoredChunkEntries() ?? [];
 		for (const [id, chunk] of chunksArray) {
 			// Handle legacy data that may not have certain fields
